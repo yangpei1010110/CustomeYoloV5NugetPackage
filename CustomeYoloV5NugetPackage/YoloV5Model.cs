@@ -196,7 +196,6 @@ namespace CustomeYoloV5NugetPackage
         {
             // 根据可信度降序排列
             var sortSource = source.Select((resultData, index) => new { Box = resultData, Index = index })
-                //.Where(b=>b.Box != null)
                 .OrderByDescending(b => b.Box.Confidence)
                 .ToArray();
 
