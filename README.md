@@ -27,7 +27,9 @@ var inputdata = new InputData() { Image = new Bitmap(Image.FromFile(filePath))};
 var results = model.Detect(imageData);
 
 var box = result.Box; // RectangleF
+
 var label = labels[result.LabelIndex];
+
 var confidence = result.Confidence;
 
 // end
