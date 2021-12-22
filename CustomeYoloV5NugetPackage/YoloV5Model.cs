@@ -198,15 +198,16 @@ namespace CustomeYoloV5NugetPackage
 
             // 根据可信度降序排列
             var sortSource = source.Select((resultData, index) => new { Box = resultData, Index = index })
-                    .OrderByDescending(b => b.Box.Confidence)
-                    .ToArray();
+                .Where(b => b.Box != null)
+                .OrderByDescending(b => b.Box.Confidence)
+                .ToArray();
 
             // 准备结果
             var result = new List<ResultData>();
 
             for (int currentIndex = 0; currentIndex < source.Count(); currentIndex++)
             {
-                // 当前项可用
+                // 当前项可用    
                 if (isActive[currentIndex])
                 {
                     var currentBox = sortSource[currentIndex].Box;
