@@ -3,6 +3,7 @@
 # Usage Like This
 
 // set labels
+
 var labels = new string[]{"person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat", "traffic light",
         "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow",
         "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee",
@@ -14,12 +15,15 @@ var labels = new string[]{"person", "bicycle", "car", "motorcycle", "airplane", 
         "hair drier", "toothbrush"};
 
 // load custom model
+
 var model = new YoloV5Model(modelFilePath, labels.Length + 5);
 
 // read image as input data
+
 var inputdata = new InputData() { Image = new Bitmap(Image.FromFile(filePath))};
 
 // detect image and get result
+
 var results = model.Detect(imageData);
 
 var box = result.Box; // RectangleF
