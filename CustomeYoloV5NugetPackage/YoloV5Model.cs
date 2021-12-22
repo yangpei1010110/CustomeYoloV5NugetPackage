@@ -1,6 +1,7 @@
 ﻿using Microsoft.ML;
 using Microsoft.ML.Data;
 using Microsoft.ML.Transforms.Image;
+using System.Collections.Concurrent;
 using System.Drawing;
 
 namespace CustomeYoloV5NugetPackage
@@ -149,7 +150,7 @@ namespace CustomeYoloV5NugetPackage
             // left, right pads
             var (xPad, yPad) = ((ModelWidth - imageWidth * gain) / 2, (ModelHeight - imageHeight * gain) / 2);
 
-            var result = new List<ResultData>();
+            var result = new ConcurrentBag<ResultData>();
             Parallel.For(0, output.Length / Dimensions, (index) =>
             {
                 var currentIndex = index * Dimensions;
@@ -193,21 +194,21 @@ namespace CustomeYoloV5NugetPackage
         /// <returns></returns>
         private IEnumerable<ResultData> NonMaximumSuppression(IEnumerable<ResultData> source)
         {
-            var activeCount = source.Count();
-            var isActive = Enumerable.Repeat(true, activeCount).ToArray();
-
             // 根据可信度降序排列
             var sortSource = source.Select((resultData, index) => new { Box = resultData, Index = index })
-                .Where(b => b.Box != null)
+                //.Where(b=>b.Box != null)
                 .OrderByDescending(b => b.Box.Confidence)
                 .ToArray();
+
+            var activeCount = sortSource.Count();
+            var isActive = Enumerable.Repeat(true, activeCount).ToArray();
 
             // 准备结果
             var result = new List<ResultData>();
 
-            for (int currentIndex = 0; currentIndex < source.Count(); currentIndex++)
+            for (int currentIndex = 0; currentIndex < sortSource.Count(); currentIndex++)
             {
-                // 当前项可用    
+                // 当前项可用
                 if (isActive[currentIndex])
                 {
                     var currentBox = sortSource[currentIndex].Box;
@@ -219,7 +220,7 @@ namespace CustomeYoloV5NugetPackage
                     }
 
                     // 准备检查相邻边界
-                    for (int checkIndex = currentIndex + 1; checkIndex < source.Count(); checkIndex++)
+                    for (int checkIndex = currentIndex + 1; checkIndex < sortSource.Count(); checkIndex++)
                     {
                         // 当前项可用
                         if (isActive[checkIndex])
