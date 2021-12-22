@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Authors>LiYangPei</Authors>
+    <Company>cn.connfly.group</Company>
+    <PackageId>liyangpei.customeyolov5nugetpackage</PackageId>
+    <Version>0.0.2</Version>
+    <PackageTags>ML;YoloV5;LiYangPei;cn.connfly.group</PackageTags>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Copyright>https://licenses.nuget.org/MIT</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ML" Version="1.7.0" />
+    <PackageReference Include="Microsoft.ML.ImageAnalytics" Version="1.7.0" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.10.0" />
+    <PackageReference Include="Microsoft.ML.OnnxTransformer" Version="1.7.0" />
+  </ItemGroup>
+
+</Project>
