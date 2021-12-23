@@ -53,42 +53,42 @@ namespace CustomeYoloV5NugetPackage
         /// <summary>
         /// 推断引擎
         /// </summary>
-        public PredictionEngine<InputData, OutputData> PredictionEngine { get; private set; }
+        private PredictionEngine<InputData, OutputData> PredictionEngine { get; }
 
         /// <summary>
         /// 每条数据的尺寸 Dimensions = 模型可识别类别数量 + x + y + width + height + confidence
         /// </summary>
-        public int Dimensions { get; private set; }
+        private int Dimensions { get; }
 
         /// <summary>
         /// 输出结果最大限制数量
         /// </summary>
-        public int Limit { get; private set; }
+        private int Limit { get; }
 
         /// <summary>
         /// objectness 过滤参数
         /// </summary>
-        public float Confidence { get; private set; }
+        private float Confidence { get; }
 
         /// <summary>
         /// 类可信度过滤参数
         /// </summary>
-        public float MulConfidence { get; private set; }
+        private float MulConfidence { get; }
 
         /// <summary>
         /// 重复框过滤参数
         /// </summary>
-        public float Overlap { get; private set; }
+        private float Overlap { get; }
 
         /// <summary>
         /// 输入模型 width
         /// </summary>
-        public int ModelWidth { get; private set; }
+        private int ModelWidth { get; }
 
         /// <summary>
         /// 输入模型 height
         /// </summary>
-        public int ModelHeight { get; private set; }
+        private int ModelHeight { get; }
 
         /// <summary>
         /// 初始化推断类
@@ -155,7 +155,7 @@ namespace CustomeYoloV5NugetPackage
         private IEnumerable<ResultData> OutputToResultData(float[] output, int imageWidth, int imageHeight)
         {
             // 计算图片大小与模型大小的倍率
-            var (xGain, yGain) = ((float) ModelWidth / (float) imageWidth, (float) ModelHeight / (float) imageHeight);
+            var (xGain, yGain) = ((float) ModelWidth / imageWidth, (float) ModelHeight / imageHeight);
             var gain = Math.Min(xGain, yGain);
             // left, right pads
             var (xPad, yPad) = ((ModelWidth - imageWidth * gain) / 2, (ModelHeight - imageHeight * gain) / 2);
