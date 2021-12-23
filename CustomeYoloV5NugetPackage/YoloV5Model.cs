@@ -39,6 +39,7 @@ namespace CustomeYoloV5NugetPackage
         public RectangleF Box { get; set; }
         public float Confidence { get; set; }
         public int LabelIndex { get; set; }
+
         public ResultData(RectangleF box, float confidence, int labelIndex)
         {
             Box = box;
@@ -53,34 +54,42 @@ namespace CustomeYoloV5NugetPackage
         /// 推断引擎
         /// </summary>
         public PredictionEngine<InputData, OutputData> PredictionEngine { get; private set; }
+
         /// <summary>
         /// 每条数据的尺寸 Dimensions = 模型可识别类别数量 + x + y + width + height + confidence
         /// </summary>
         public int Dimensions { get; private set; }
+
         /// <summary>
         /// 输出结果最大限制数量
         /// </summary>
         public int Limit { get; private set; }
+
         /// <summary>
         /// objectness 过滤参数
         /// </summary>
         public float Confidence { get; private set; }
+
         /// <summary>
         /// 类可信度过滤参数
         /// </summary>
         public float MulConfidence { get; private set; }
+
         /// <summary>
         /// 重复框过滤参数
         /// </summary>
         public float Overlap { get; private set; }
+
         /// <summary>
         /// 输入模型 width
         /// </summary>
         public int ModelWidth { get; private set; }
+
         /// <summary>
         /// 输入模型 height
         /// </summary>
         public int ModelHeight { get; private set; }
+
         /// <summary>
         /// 初始化推断类
         /// </summary>
@@ -92,8 +101,8 @@ namespace CustomeYoloV5NugetPackage
         /// <param name="overlap">重复框过滤参数</param>
         /// <param name="modelWidth">输入模型 width</param>
         /// <param name="modelHeight">输入模型 height</param>
-        public YoloV5Model(string modelFilePath, int dimensions, 
-            int limit = 10,float confidence = 0.2f, float mulConfidence = 0.25f, float overlap = 0.45f, int modelWidth = 640, int modelHeight = 640)
+        public YoloV5Model(string modelFilePath, int dimensions,
+            int limit = 10, float confidence = 0.2f, float mulConfidence = 0.25f, float overlap = 0.45f, int modelWidth = 640, int modelHeight = 640)
         {
             Dimensions = dimensions;
             Limit = limit;
@@ -105,17 +114,18 @@ namespace CustomeYoloV5NugetPackage
 
             MLContext mlContext = new MLContext();
             var transformer = mlContext.Transforms
-                .ResizeImages(outputColumnName: "images", imageWidth: modelWidth, imageHeight: modelHeight, inputColumnName: "Image", resizing: ImageResizingEstimator.ResizingKind.IsoPad)
+                .ResizeImages(outputColumnName: "images", imageWidth: modelWidth, imageHeight: modelHeight, inputColumnName: "Image",
+                    resizing: ImageResizingEstimator.ResizingKind.IsoPad)
                 .Append(mlContext.Transforms.ExtractPixels("images", scaleImage: 1f / 255f, interleavePixelColors: false))
                 .Append(mlContext.Transforms.ApplyOnnxModel(
-                        gpuDeviceId: 0, // 显卡 index
-                        shapeDictionary: new Dictionary<string, int[]>()
-                                    {
-                                       { "images", new[] { 1, 3, modelWidth, modelHeight } }
-                                    },
-                        outputColumnName: "output",
-                        inputColumnName: "images",
-                        modelFile: modelFilePath))
+                    gpuDeviceId: 0, // 显卡 index
+                    shapeDictionary: new Dictionary<string, int[]>()
+                    {
+                        {"images", new[] {1, 3, modelWidth, modelHeight}}
+                    },
+                    outputColumnName: "output",
+                    inputColumnName: "images",
+                    modelFile: modelFilePath))
                 .Fit(mlContext.Data.LoadFromEnumerable(new List<InputData>()));
 
             PredictionEngine = mlContext.Model.CreatePredictionEngine<InputData, OutputData>(transformer);
@@ -142,10 +152,10 @@ namespace CustomeYoloV5NugetPackage
         /// <param name="imageWidth"></param>
         /// <param name="imageHeight"></param>
         /// <returns></returns>
-        private IEnumerable<ResultData> OutputToResultData(float[] output,int imageWidth,int imageHeight)
+        private IEnumerable<ResultData> OutputToResultData(float[] output, int imageWidth, int imageHeight)
         {
             // 计算图片大小与模型大小的倍率
-            var (xGain, yGain) = ((float)ModelWidth / (float)imageWidth, (float)ModelHeight / (float)imageHeight);
+            var (xGain, yGain) = ((float) ModelWidth / (float) imageWidth, (float) ModelHeight / (float) imageHeight);
             var gain = Math.Min(xGain, yGain);
             // left, right pads
             var (xPad, yPad) = ((ModelWidth - imageWidth * gain) / 2, (ModelHeight - imageHeight * gain) / 2);
@@ -159,11 +169,10 @@ namespace CustomeYoloV5NugetPackage
                 {
                     return;
                 }
+
                 // 为每个类的 confidence 乘以 objectness
-                Parallel.For(5, Dimensions, (classIndex) =>
-                {
-                    output[currentIndex + classIndex] = output[currentIndex + classIndex] * output[currentIndex + 4];
-                });
+                Parallel.For(5, Dimensions,
+                    (classIndex) => { output[currentIndex + classIndex] = output[currentIndex + classIndex] * output[currentIndex + 4]; });
 
                 // 收集对象
                 Parallel.For(5, Dimensions, (classIndex) =>
@@ -173,6 +182,7 @@ namespace CustomeYoloV5NugetPackage
                     {
                         return;
                     }
+
                     // 坐标转换
                     float topLeftX = ((output[currentIndex] - output[currentIndex + 2] / 2f) - xPad) / gain;
                     float topLeftY = ((output[currentIndex + 1] - output[currentIndex + 3] / 2f) - yPad) / gain;
@@ -187,6 +197,7 @@ namespace CustomeYoloV5NugetPackage
 
             return result;
         }
+
         /// <summary>
         /// NMS 算法去除重复框
         /// </summary>
@@ -195,7 +206,7 @@ namespace CustomeYoloV5NugetPackage
         private IEnumerable<ResultData> NonMaximumSuppression(IEnumerable<ResultData> source)
         {
             // 根据可信度降序排列
-            var sortSource = source.Select((resultData, index) => new { Box = resultData, Index = index })
+            var sortSource = source.Select((resultData, index) => new {Box = resultData, Index = index})
                 .OrderByDescending(b => b.Box.Confidence)
                 .ToArray();
 
